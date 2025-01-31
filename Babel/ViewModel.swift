@@ -128,10 +128,12 @@ class ViewModel: NSObject, AVAudioRecorderDelegate, AVAudioPlayerDelegate {
             Task { @MainActor [unowned self] in
                 do {
                     self.state = .processingSpeech
-                    let prompt = try await client.generateAudioTransciptions(audioData: audioData)
+                    let transcript = try await client.generateAudioTranslations(audioData: audioData)
                     
+                    let prompt = "Translate the following text:\n\n\(transcript)\n\nTo Spanish:"
                     try Task.checkCancellation()
                     let responseText = try await client.promptChatGPT(prompt: prompt)
+                    print("response: \(responseText)")
                     
                     try Task.checkCancellation()
                     let data = try await client.generateSpeechFrom(input: responseText, voice:
