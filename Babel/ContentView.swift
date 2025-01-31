@@ -6,56 +6,128 @@
 //
 
 import SwiftUI
-import SwiftData
+import SiriWaveView
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
-
+    
+    @State var vm = ViewModel()
+    @State var isSymbolAnimating = false
+    
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
+        VStack(spacing: 16) {
+            Text("XCA AI Voice Assistant")
+                .font(.title2)
+            
+            Spacer()
+            SiriWaveView(power: $vm.audioPower)
+                .opacity(vm.siriWaveFormOpacity)
+                .frame(height: 256)
+                .overlay { overlayView }
+            Spacer()
+            
+            switch vm.state {
+            case .recordingSpeech:
+                cancelRecordingButton
+                
+            case .processingSpeech, .playingSpeech:
+                cancelButton
+                
+            default: EmptyView()
             }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
+            
+            Picker("Select Voice", selection: $vm.selectedVoice) {
+                ForEach(VoiceType.allCases, id: \.self) {
+                    Text($0.rawValue).id($0)
                 }
             }
-        } detail: {
-            Text("Select an item")
+            .pickerStyle(.segmented)
+            .disabled(!vm.isIdle)
+            
+            if case let .error(error) = vm.state {
+                Text(error.localizedDescription)
+                    .foregroundStyle(.red)
+                    .font(.caption)
+                    .lineLimit(2)
+            }
+        }
+        .padding()
+    }
+    
+    @ViewBuilder
+    var overlayView: some View {
+        switch vm.state {
+        case .idle, .error:
+            startCaptureButton
+        case .processingSpeech:
+            Image(systemName: "brain")
+                .symbolEffect(.bounce.up.byLayer, options: .repeating, value: isSymbolAnimating)
+                .font(.system(size: 128))
+                .onAppear { isSymbolAnimating = true }
+                .onDisappear { isSymbolAnimating = false }
+        default: EmptyView()
         }
     }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
+    
+    var startCaptureButton: some View {
+        Button {
+            vm.startCaptureAudio()
+        } label: {
+            Image(systemName: "mic.circle")
+                .symbolRenderingMode(.multicolor)
+                .font(.system(size: 128))
+        }.buttonStyle(.borderless)
     }
+    
+    var cancelRecordingButton: some View {
+        Button(role: .destructive) {
+            vm.cancelRecording()
+        } label: {
+            Image(systemName: "xmark.circle.fill")
+                .symbolRenderingMode(.multicolor)
+                .font(.system(size: 44))
+        }.buttonStyle(.borderless)
 
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
-            }
-        }
+    }
+    
+    var cancelButton: some View {
+        Button(role: .destructive) {
+            vm.cancelProcessingTask()
+        } label: {
+            Image(systemName: "stop.circle.fill")
+                .symbolRenderingMode(.monochrome)
+                .foregroundStyle(.red)
+                .font(.system(size: 44))
+        }.buttonStyle(.borderless)
+
     }
 }
 
-#Preview {
+#Preview("Idle") {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+}
+
+#Preview("Recording Speech") {
+    let vm = ViewModel()
+    vm.state = .recordingSpeech
+    vm.audioPower = 0.2
+    return ContentView(vm: vm)
+}
+
+#Preview("Processing Speech") {
+    let vm = ViewModel()
+    vm.state = .processingSpeech
+    return ContentView(vm: vm)
+}
+
+#Preview("Playing Speech") {
+    let vm = ViewModel()
+    vm.state = .playingSpeech
+    vm.audioPower = 0.3
+    return ContentView(vm: vm)
+}
+
+#Preview("Error") {
+    let vm = ViewModel()
+    vm.state = .error("An error has occured")
+    return ContentView(vm: vm)
 }

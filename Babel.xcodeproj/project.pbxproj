@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		64CAB0292D4D80350003407D /* XCAOpenAIClient in Frameworks */ = {isa = PBXBuildFile; productRef = 64CAB0282D4D80350003407D /* XCAOpenAIClient */; };
+		64CAB0322D4D82860003407D /* SiriWaveView in Frameworks */ = {isa = PBXBuildFile; productRef = 64CAB0312D4D82860003407D /* SiriWaveView */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		64CAB0142D4D7F980003407D /* Babel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Babel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +28,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				64CAB0292D4D80350003407D /* XCAOpenAIClient in Frameworks */,
+				64CAB0322D4D82860003407D /* SiriWaveView in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +72,8 @@
 			);
 			name = Babel;
 			packageProductDependencies = (
+				64CAB0282D4D80350003407D /* XCAOpenAIClient */,
+				64CAB0312D4D82860003407D /* SiriWaveView */,
 			);
 			productName = Babel;
 			productReference = 64CAB0142D4D7F980003407D /* Babel.app */;
@@ -94,6 +103,10 @@
 			);
 			mainGroup = 64CAB00B2D4D7F980003407D;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				64CAB0272D4D80350003407D /* XCRemoteSwiftPackageReference "XCAOpenAIClient" */,
+				64CAB0302D4D82860003407D /* XCRemoteSwiftPackageReference "SiriWaveView" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 64CAB0152D4D7F980003407D /* Products */;
 			projectDirPath = "";
@@ -255,6 +268,7 @@
 				DEVELOPMENT_TEAM = AVGLKGFL33;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Used to translate and transcribe audio";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -284,6 +298,7 @@
 				DEVELOPMENT_TEAM = AVGLKGFL33;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Used to translate and transcribe audio";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -324,6 +339,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		64CAB0272D4D80350003407D /* XCRemoteSwiftPackageReference "XCAOpenAIClient" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/eramirezvilla/XCAOpenAIClient.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		64CAB0302D4D82860003407D /* XCRemoteSwiftPackageReference "SiriWaveView" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/alfianlosari/SiriWaveView.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		64CAB0282D4D80350003407D /* XCAOpenAIClient */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 64CAB0272D4D80350003407D /* XCRemoteSwiftPackageReference "XCAOpenAIClient" */;
+			productName = XCAOpenAIClient;
+		};
+		64CAB0312D4D82860003407D /* SiriWaveView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 64CAB0302D4D82860003407D /* XCRemoteSwiftPackageReference "SiriWaveView" */;
+			productName = SiriWaveView;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 64CAB00C2D4D7F980003407D /* Project object */;
 }
