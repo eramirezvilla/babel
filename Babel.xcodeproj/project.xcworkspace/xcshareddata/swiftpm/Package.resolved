@@ -1,5 +1,5 @@
 {
-  "originHash" : "ec68ad9ff3aef2ddc81812a46b916903f9c71792c57b1449740a222af480da41",
+  "originHash" : "cfe947ee1c7c6c32a882b6c1f789b9f51d61421b8020f36d2e5ff2e0e7769a64",
   "pins" : [
     {
       "identity" : "openapikit",
@@ -97,7 +97,7 @@
       "location" : "https://github.com/eramirezvilla/XCAOpenAIClient.git",
       "state" : {
         "branch" : "main",
-        "revision" : "2aff9998ad3b2ced7c46f89161a722081102659b"
+        "revision" : "10b162c2d7e9790cb9f8fce0af90f2dbf5ce0b64"
       }
     },
     {

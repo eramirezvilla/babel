@@ -13,6 +13,7 @@ import XCAOpenAIClient
 @Observable
 class ViewModel: NSObject, AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     let client = OpenAIClient(apiKey: ProcessInfo.processInfo.environment["OPENAI_API_KEY"] ?? "")
+    let realtimeClient = OpenAIRealtimeClient(apiKey: ProcessInfo.processInfo.environment["OPENAI_API_KEY"] ?? "")
         var audioPlayer: AVAudioPlayer!
         var audioRecorder: AVAudioRecorder!
         #if !os(macOS)
@@ -25,6 +26,7 @@ class ViewModel: NSObject, AVAudioRecorderDelegate, AVAudioPlayerDelegate {
         var processingSpeechTask: Task<Void, Never>?
         
         var selectedVoice = VoiceType.alloy
+    var liveTranscript: String = ""
         
         var captureURL: URL {
             FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)
@@ -48,8 +50,27 @@ class ViewModel: NSObject, AVAudioRecorderDelegate, AVAudioPlayerDelegate {
             }
         }
         
+        // Add a property to track WebSocket connection status
+        var isWebSocketConnected = false
+        
         override init() {
             super.init()
+            realtimeClient.connect()
+            
+            // Add connection status handling
+            realtimeClient.onMessageReceived = { [weak self] message in
+                DispatchQueue.main.async {
+                    self?.handleRealtimeMessage(message)
+                }
+            }
+            
+            realtimeClient.onError = { [weak self] error in
+                DispatchQueue.main.async {
+                    print("Realtime WebSocket Error: \(error)")
+                    self?.state = .error(error)
+                }
+            }
+            
             #if !os(macOS)
             do {
                 #if os(iOS)
@@ -69,6 +90,60 @@ class ViewModel: NSObject, AVAudioRecorderDelegate, AVAudioPlayerDelegate {
             }
             #endif
         }
+    
+    private func handleRealtimeMessage(_ message: String) {
+            print("Realtime Transcription: \(message)")
+            liveTranscript.append("\n" + message)
+        }
+    
+    func startRealtimeCapture() {
+        guard realtimeClient.isConnected else {
+            state = .error(NSError(domain: "", code: -1, 
+                                 userInfo: [NSLocalizedDescriptionKey: "WebSocket not connected"]))
+            return
+        }
+        
+        resetValues()
+        state = .recordingSpeech
+        do {
+            audioRecorder = try AVAudioRecorder(url: captureURL,
+                                                settings: [
+                                                    AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
+                                                    AVSampleRateKey: 12000,
+                                                    AVNumberOfChannelsKey: 1,
+                                                    AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
+                                                ])
+            audioRecorder.isMeteringEnabled = true
+            audioRecorder.delegate = self
+            audioRecorder.record()
+            
+            // Send audio chunks while recording
+            recordingTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true, block: { [weak self] _ in
+                guard let self = self else { return }
+                self.sendRealtimeAudioChunk()
+            })
+            
+        } catch {
+            resetValues()
+            state = .error(error)
+        }
+    }
+    private func sendRealtimeAudioChunk() {
+        do {
+            let data = try Data(contentsOf: captureURL)
+            let base64Audio = data.base64EncodedString()
+            realtimeClient.sendMessage(base64Audio)
+        } catch {
+            print("Error reading audio chunk: \(error)")
+        }
+    }
+    
+    func finishRealtimeCapture() {
+            resetValues()
+            realtimeClient.disconnect()
+            state = .idle
+        }
+
         
         func startCaptureAudio() {
             resetValues()
@@ -112,6 +187,7 @@ class ViewModel: NSObject, AVAudioRecorderDelegate, AVAudioPlayerDelegate {
                 state = .error(error)
             }
         }
+    
         
         func finishCaptureAudio() {
             resetValues()

@@ -70,7 +70,7 @@ struct ContentView: View {
     
     var startCaptureButton: some View {
         Button {
-            vm.startCaptureAudio()
+            vm.startRealtimeCapture()
         } label: {
             Image(systemName: "mic.circle")
                 .symbolRenderingMode(.multicolor)
